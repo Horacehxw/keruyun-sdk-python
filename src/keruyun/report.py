@@ -74,7 +74,8 @@ class ReportAPI:
             data = resp.json()
 
             code = data.get("code", 0)
-            if code != 0:
+            # code 0 = standard success; code 2001 = success for orderItem/list endpoint
+            if code not in (0, 2001):
                 if code in _AUTH_ERROR_CODES:
                     self._client._tokens.pop((brand_id, None), None)
                     if allow_retry:
@@ -213,72 +214,46 @@ class ReportAPI:
         start_date: int,
         end_date: int,
         page_num: int = 1,
-        page_size: int = 50,
-        count_collect_type: int = 1,
-        sell_collect_type: bool = True,
-        order_source_list: list[str] | None = None,
-        order_type_list: list[str] | None = None,
-        goods_temp_flag: int = 0,
-        sales_type: str = "NORMAL",
-        statistics_by_shop: bool = True,
-        group_type: int = 1,
-        org_statistics_type: str = "BY_SHOP",
-        period_type: str = "BY_DAY",
-        coupon_statistical_type: str = "BY_NAME",
-        sort_field: str = "sellNum",
-        sort_type: str = "DESC",
-    ) -> Any:
+        page_size: int = 10,
+    ) -> dict:
         """
         Fetch menu item sales statistics.
 
         POST /open/standard/report/orderItem/list
 
-        Note: Date range must be at most 1 day.
+        Uses ``dateType: FINISH_BUSI_DATE`` (finish business date).
+        Returns code 2001 on success (handled transparently by the client).
 
         Args:
             brand_id: Brand ID.
-            shop_ids: List of shop IDs to query.
-            start_date: Start timestamp in milliseconds.
-            end_date: End timestamp in milliseconds.
+            shop_ids: List of shop IDs to query (pass ``[]`` for all shops).
+            start_date: Start timestamp in milliseconds (FINISH_BUSI_DATE).
+            end_date: End timestamp in milliseconds (FINISH_BUSI_DATE).
             page_num: Page number (default 1).
-            page_size: Page size (default 50).
-            count_collect_type: Counting dimension (int, default 1).
-            sell_collect_type: Sell aggregation type (bool, default True).
-            order_source_list: Order sources (default ["POS"]).
-            order_type_list: Order types (default ["FOR_HERE"]).
-            goods_temp_flag: Temporary goods flag (int, default 0).
-            sales_type: Sales type filter (default "NORMAL").
-            statistics_by_shop: Split stats by shop (default True).
-            group_type: Grouping type (int, default 1).
-            org_statistics_type: Org statistics type (default "BY_SHOP").
-            period_type: Period grouping type (default "BY_DAY").
-            coupon_statistical_type: Coupon stat type (default "BY_NAME").
-            sort_field: Sort field name (default "sellNum").
-            sort_type: Sort direction (default "DESC").
+            page_size: Page size (default 10).
 
         Returns:
             The ``result`` field from the API response.
         """
-        if order_source_list is None:
-            order_source_list = ["POS"]
-        if order_type_list is None:
-            order_type_list = ["FOR_HERE"]
-        body = self._build_body(shop_ids, start_date, end_date, page_num, page_size)
-        body.update({
-            "countLatitude": {"countCollectType": count_collect_type},
-            "sellLatitude": {"sellCollectType": sell_collect_type},
-            "orderSourceCondition": {"orderSourceList": order_source_list},
-            "orderTypeCondition": {"orderTypeList": order_type_list},
-            "goodsTempFlag": goods_temp_flag,
-            "salesType": sales_type,
-            "statisticsByShop": statistics_by_shop,
-            "groupType": group_type,
-            "orgStatisticsType": org_statistics_type,
-            "periodType": period_type,
-            "couponStatisticalType": coupon_statistical_type,
-            "sortField": sort_field,
-            "sortType": sort_type,
-        })
+        body = {
+            "dateRange": {
+                "dateType": "FINISH_BUSI_DATE",
+                "startDate": start_date,
+                "endDate": end_date,
+            },
+            "countLatitude": {"countCollectType": 0, "countType": 1},
+            "sellLatitude": {"sellCollectType": False, "countType": "SINGLE_PACKAGE_ITEM"},
+            "sameNameMerge": False,
+            "pageBean": {"pageNum": page_num, "pageSize": page_size},
+            "orderSourceCondition": {"operationFlag": 0, "orderSources": []},
+            "orderTypeCondition": {"operationFlag": 0, "orderTypes": []},
+            "goodsTempFlag": 0,
+            "statisticsByShop": False,
+            "sortExtCondition": "noSort",
+            "orgStatisticsType": "BY_BRAND",
+            "tempFlag": False,
+            "shopIds": shop_ids,
+        }
         return self._request(
             path="/open/standard/report/orderItem/list",
             body=body,

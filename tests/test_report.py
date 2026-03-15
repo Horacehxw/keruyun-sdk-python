@@ -53,9 +53,10 @@ class TestReportAPI:
 
     @responses.activate
     def test_get_menu_sales(self, client):
+        # This endpoint returns code 2001 on success (not 0)
         responses.post(
             f"{BASE_URL}/open/standard/report/orderItem/list",
-            json={"code": 0, "result": {"list": [{"itemName": "酸辣粉", "quantity": 120}]}},
+            json={"code": 2001, "result": {"list": [{"itemName": "酸辣粉", "quantity": 120}]}},
         )
         result = client.report.get_menu_sales(
             brand_id=BRAND_ID,

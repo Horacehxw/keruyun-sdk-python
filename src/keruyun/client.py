@@ -210,7 +210,8 @@ class KeruyunClient:
         data = resp.json()
 
         code = data.get("code", 0)
-        if code != 0:
+        # code 0 = standard success; code 2001 = success for orderItem/list endpoint
+        if code not in (0, 2001):
             if code in _AUTH_ERROR_CODES:
                 # Invalidate cached token so next call fetches fresh
                 cache_key = (brand_id, shop_id)
