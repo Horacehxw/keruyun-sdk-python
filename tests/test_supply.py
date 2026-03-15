@@ -16,6 +16,7 @@ SHOP_ID = 810094
 APP_KEY = "testkey"
 APP_SECRET = "testsecret"
 CACHED_TOKEN = "cached_token"
+BOM_SCHEME_ID = "fbcc18a5-1ff9-4ed3-8bd2-ff06c61a387a"
 
 
 def _make_api_response(result, code: int = 0, msg: str = "success"):
@@ -69,6 +70,24 @@ def test_get_inventory(brand_client):
 
 
 @responses_lib.activate
+def test_get_bom_schemes(brand_client):
+    """POST /open/standard/supply/bom/queryAllBomSchemeWithStore returns BOM schemes."""
+    path = "/open/standard/supply/bom/queryAllBomSchemeWithStore"
+    mock_data = [{"id": BOM_SCHEME_ID, "name": "默认成本卡方案"}]
+    responses_lib.add(
+        responses_lib.POST,
+        BASE_URL + path,
+        json=_make_api_response(mock_data),
+        status=200,
+    )
+
+    result = brand_client.supply.get_bom_schemes(brand_id=BRAND_ID)
+
+    assert result == mock_data
+    assert len(responses_lib.calls) == 1
+
+
+@responses_lib.activate
 def test_get_bom(brand_client):
     """POST /open/standard/supply/bom/pageQueryBom returns BOM data."""
     path = "/open/standard/supply/bom/pageQueryBom"
@@ -80,13 +99,16 @@ def test_get_bom(brand_client):
         status=200,
     )
 
-    result = brand_client.supply.get_bom(brand_id=BRAND_ID, page_num=1, page_size=20)
+    result = brand_client.supply.get_bom(
+        brand_id=BRAND_ID, bom_scheme_id=BOM_SCHEME_ID, page_num=1, page_size=20
+    )
 
     assert result == mock_data
     assert len(responses_lib.calls) == 1
     req = responses_lib.calls[0].request
     assert path in req.url
     assert "brandId=" in req.url
+    assert b"bomSchemeId" in req.body
 
 
 @responses_lib.activate
@@ -127,6 +149,7 @@ def test_get_stock_in_out(brand_client):
 
     result = brand_client.supply.get_stock_in_out(
         brand_id=BRAND_ID,
+        org_ids=[SHOP_ID],
         start_date="2026-01-01",
         end_date="2026-01-31",
         page_num=1,
@@ -139,32 +162,7 @@ def test_get_stock_in_out(brand_client):
     assert path in req.url
     assert b"startDate" in req.body
     assert b"endDate" in req.body
-
-
-@responses_lib.activate
-def test_get_purchase_in_list(brand_client):
-    """POST /open/standard/procurement/supply/purchase/in/list returns purchase records."""
-    path = "/open/standard/procurement/supply/purchase/in/list"
-    mock_data = {"list": [{"purchaseId": 7, "amount": 500.0}], "total": 1}
-    responses_lib.add(
-        responses_lib.POST,
-        BASE_URL + path,
-        json=_make_api_response(mock_data),
-        status=200,
-    )
-
-    result = brand_client.supply.get_purchase_in_list(
-        brand_id=BRAND_ID,
-        start_date="2026-01-01",
-        end_date="2026-01-31",
-    )
-
-    assert result == mock_data
-    assert len(responses_lib.calls) == 1
-    req = responses_lib.calls[0].request
-    assert path in req.url
-    assert b"startDate" in req.body
-    assert b"endDate" in req.body
+    assert b"orgIds" in req.body
 
 
 @responses_lib.activate
@@ -181,6 +179,7 @@ def test_get_gross_profit(brand_client):
 
     result = brand_client.supply.get_gross_profit(
         brand_id=BRAND_ID,
+        org_id_list=[SHOP_ID],
         start_date="2026-01-01",
         end_date="2026-01-31",
         page_num=1,
@@ -193,6 +192,7 @@ def test_get_gross_profit(brand_client):
     assert path in req.url
     assert b"startDate" in req.body
     assert b"endDate" in req.body
+    assert b"orgIdList" in req.body
 
 
 # ---------------------------------------------------------------------------

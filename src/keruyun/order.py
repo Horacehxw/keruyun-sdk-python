@@ -1,4 +1,9 @@
-"""OrderAPI — order-related endpoints for the Keruyun open platform."""
+"""OrderAPI — order-related endpoints for the Keruyun open platform.
+
+Note: Order endpoints require **shop-level** authorization (shopIdenty).
+The brandId and shopIdenty parameters cannot coexist in the same request.
+Date format for order queries is "YYYY-MM-DD HH:mm:ss" strings (not ms timestamps).
+"""
 
 from __future__ import annotations
 
@@ -16,8 +21,7 @@ class OrderAPI:
 
     def get_order_list(
         self,
-        brand_id: int,
-        shop_ids: list[int],
+        shop_id: int,
         start_date: str,
         end_date: str,
         date_type: str = "1",
@@ -31,11 +35,12 @@ class OrderAPI:
 
         POST /open/standard/order/queryList
 
+        This is a **shop-level** API — requires shopIdenty, not brandId.
+
         Args:
-            brand_id: Brand ID.
-            shop_ids: List of shop IDs to query.
-            start_date: Start date string (e.g. "2026-03-01").
-            end_date: End date string (e.g. "2026-03-15").
+            shop_id: Shop ID (used for auth via shopIdenty).
+            start_date: Start datetime string (e.g. "2026-03-01 00:00:00").
+            end_date: End datetime string (e.g. "2026-03-15 23:59:59").
             date_type: Date filter type ("1" = order date, default).
             order_types: Optional list of order type codes to filter.
             order_statuses: Optional list of order status codes to filter.
@@ -46,7 +51,7 @@ class OrderAPI:
             Parsed result dict (the "result" field of the API response).
         """
         body: dict[str, Any] = {
-            "shopIds": shop_ids,
+            "shopIds": [shop_id],
             "startDate": start_date,
             "endDate": end_date,
             "dateType": date_type,
@@ -61,12 +66,12 @@ class OrderAPI:
         return self._client._request(
             "/open/standard/order/queryList",
             body=body,
-            brand_id=brand_id,
+            shop_id=shop_id,
         )
 
     def get_order_detail(
         self,
-        brand_id: int,
+        shop_id: int,
         order_id: str,
     ) -> Any:
         """
@@ -74,8 +79,10 @@ class OrderAPI:
 
         POST /open/standard/order/queryDetail
 
+        This is a **shop-level** API — requires shopIdenty, not brandId.
+
         Args:
-            brand_id: Brand ID.
+            shop_id: Shop ID (used for auth via shopIdenty).
             order_id: Order ID string.
 
         Returns:
@@ -87,5 +94,5 @@ class OrderAPI:
         return self._client._request(
             "/open/standard/order/queryDetail",
             body=body,
-            brand_id=brand_id,
+            shop_id=shop_id,
         )

@@ -153,11 +153,20 @@ class ReportAPI:
         end_date: int,
         page_num: int = 1,
         page_size: int = 50,
+        coupon_statistical_type: str = "BY_NAME",
+        store_statistical_type: str = "COMBINE",
+        org_statistics_type: str = "BY_SHOP",
+        period_type: str = "BY_DAY",
+        order_source_list: list[str] | None = None,
+        order_type_list: list[str] | None = None,
+        statistics_by_shop: bool = True,
     ) -> Any:
         """
         Fetch income constitution breakdown (dine-in, takeout, etc.).
 
         POST /open/standard/report/business/income/constitute/v3/list
+
+        Note: Date range must be at most 1 day.
 
         Args:
             brand_id: Brand ID.
@@ -166,11 +175,31 @@ class ReportAPI:
             end_date: End timestamp in milliseconds.
             page_num: Page number (default 1).
             page_size: Page size (default 50).
+            coupon_statistical_type: Coupon stat type (default "BY_NAME").
+            store_statistical_type: Store stat type (default "COMBINE").
+            org_statistics_type: Org statistics type (default "BY_SHOP").
+            period_type: Period grouping type (default "BY_DAY").
+            order_source_list: Order sources (default ["POS"]).
+            order_type_list: Order types (default ["FOR_HERE"]).
+            statistics_by_shop: Whether to split stats by shop (default True).
 
         Returns:
             The ``result`` field from the API response.
         """
+        if order_source_list is None:
+            order_source_list = ["POS"]
+        if order_type_list is None:
+            order_type_list = ["FOR_HERE"]
         body = self._build_body(shop_ids, start_date, end_date, page_num, page_size)
+        body.update({
+            "couponStatisticalType": coupon_statistical_type,
+            "storeStatisticalType": store_statistical_type,
+            "orgStatisticsType": org_statistics_type,
+            "periodType": period_type,
+            "orderSourceList": order_source_list,
+            "orderTypeList": order_type_list,
+            "statisticsByShop": statistics_by_shop,
+        })
         return self._request(
             path="/open/standard/report/business/income/constitute/v3/list",
             body=body,
@@ -185,11 +214,26 @@ class ReportAPI:
         end_date: int,
         page_num: int = 1,
         page_size: int = 50,
+        count_collect_type: int = 1,
+        sell_collect_type: bool = True,
+        order_source_list: list[str] | None = None,
+        order_type_list: list[str] | None = None,
+        goods_temp_flag: int = 0,
+        sales_type: str = "NORMAL",
+        statistics_by_shop: bool = True,
+        group_type: int = 1,
+        org_statistics_type: str = "BY_SHOP",
+        period_type: str = "BY_DAY",
+        coupon_statistical_type: str = "BY_NAME",
+        sort_field: str = "sellNum",
+        sort_type: str = "DESC",
     ) -> Any:
         """
         Fetch menu item sales statistics.
 
         POST /open/standard/report/orderItem/list
+
+        Note: Date range must be at most 1 day.
 
         Args:
             brand_id: Brand ID.
@@ -198,11 +242,43 @@ class ReportAPI:
             end_date: End timestamp in milliseconds.
             page_num: Page number (default 1).
             page_size: Page size (default 50).
+            count_collect_type: Counting dimension (int, default 1).
+            sell_collect_type: Sell aggregation type (bool, default True).
+            order_source_list: Order sources (default ["POS"]).
+            order_type_list: Order types (default ["FOR_HERE"]).
+            goods_temp_flag: Temporary goods flag (int, default 0).
+            sales_type: Sales type filter (default "NORMAL").
+            statistics_by_shop: Split stats by shop (default True).
+            group_type: Grouping type (int, default 1).
+            org_statistics_type: Org statistics type (default "BY_SHOP").
+            period_type: Period grouping type (default "BY_DAY").
+            coupon_statistical_type: Coupon stat type (default "BY_NAME").
+            sort_field: Sort field name (default "sellNum").
+            sort_type: Sort direction (default "DESC").
 
         Returns:
             The ``result`` field from the API response.
         """
+        if order_source_list is None:
+            order_source_list = ["POS"]
+        if order_type_list is None:
+            order_type_list = ["FOR_HERE"]
         body = self._build_body(shop_ids, start_date, end_date, page_num, page_size)
+        body.update({
+            "countLatitude": {"countCollectType": count_collect_type},
+            "sellLatitude": {"sellCollectType": sell_collect_type},
+            "orderSourceCondition": {"orderSourceList": order_source_list},
+            "orderTypeCondition": {"orderTypeList": order_type_list},
+            "goodsTempFlag": goods_temp_flag,
+            "salesType": sales_type,
+            "statisticsByShop": statistics_by_shop,
+            "groupType": group_type,
+            "orgStatisticsType": org_statistics_type,
+            "periodType": period_type,
+            "couponStatisticalType": coupon_statistical_type,
+            "sortField": sort_field,
+            "sortType": sort_type,
+        })
         return self._request(
             path="/open/standard/report/orderItem/list",
             body=body,
@@ -249,11 +325,20 @@ class ReportAPI:
         end_date: int,
         page_num: int = 1,
         page_size: int = 50,
+        coupon_statistical_type: str = "BY_NAME",
+        store_statistical_type: str = "COMBINE",
+        org_statistics_type: str = "BY_SHOP",
+        period_type: str = "BY_DAY",
+        order_source_list: list[str] | None = None,
+        order_type_list: list[str] | None = None,
+        statistics_by_shop: bool = True,
     ) -> Any:
         """
         Fetch promotional discount statistics.
 
         POST /open/standard/report/business/income/promo/v3/list
+
+        Note: Date range must be at most 1 day.
 
         Args:
             brand_id: Brand ID.
@@ -262,11 +347,31 @@ class ReportAPI:
             end_date: End timestamp in milliseconds.
             page_num: Page number (default 1).
             page_size: Page size (default 50).
+            coupon_statistical_type: Coupon stat type (default "BY_NAME").
+            store_statistical_type: Store stat type (default "COMBINE").
+            org_statistics_type: Org statistics type (default "BY_SHOP").
+            period_type: Period grouping type (default "BY_DAY").
+            order_source_list: Order sources (default ["POS"]).
+            order_type_list: Order types (default ["FOR_HERE"]).
+            statistics_by_shop: Whether to split stats by shop (default True).
 
         Returns:
             The ``result`` field from the API response.
         """
+        if order_source_list is None:
+            order_source_list = ["POS"]
+        if order_type_list is None:
+            order_type_list = ["FOR_HERE"]
         body = self._build_body(shop_ids, start_date, end_date, page_num, page_size)
+        body.update({
+            "couponStatisticalType": coupon_statistical_type,
+            "storeStatisticalType": store_statistical_type,
+            "orgStatisticsType": org_statistics_type,
+            "periodType": period_type,
+            "orderSourceList": order_source_list,
+            "orderTypeList": order_type_list,
+            "statisticsByShop": statistics_by_shop,
+        })
         return self._request(
             path="/open/standard/report/business/income/promo/v3/list",
             body=body,

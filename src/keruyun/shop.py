@@ -1,5 +1,8 @@
 """
 ShopAPI — endpoints for querying store/shop information.
+
+Note: get_store_list uses brand-level auth, but get_store_detail uses
+shop-level auth (shopIdenty). brandId and shopIdenty cannot coexist.
 """
 
 from __future__ import annotations
@@ -18,7 +21,13 @@ class ShopAPI:
     def __init__(self, client: KeruyunClient):
         self._client = client
 
-    def _request(self, path: str, body: dict, brand_id: int | None = None) -> Any:
+    def _request(
+        self,
+        path: str,
+        body: dict,
+        brand_id: int | None = None,
+        shop_id: int | None = None,
+    ) -> Any:
         """
         Make an authenticated POST request to a shop endpoint.
 
@@ -26,7 +35,7 @@ class ShopAPI:
         """
         client = self._client
         body_json = json.dumps(body, separators=(",", ":"), ensure_ascii=False)
-        params = client._build_query_params(brand_id=brand_id, shop_id=None)
+        params = client._build_query_params(brand_id=brand_id, shop_id=shop_id)
         sign = compute_sign(params, body_json=body_json, token_or_secret=params["token"])
         params["sign"] = sign
 
@@ -54,11 +63,13 @@ class ShopAPI:
 
         POST /open/standard/shop/MerchantOrgReadService.queryBrandStores
 
+        Uses **brand-level** authorization.
+
         Args:
             brand_id: Brand ID.
 
         Returns:
-            List of store dicts.
+            Dict with "shops" key containing list of store dicts.
         """
         return self._request(
             "/open/standard/shop/MerchantOrgReadService.queryBrandStores",
@@ -66,14 +77,15 @@ class ShopAPI:
             brand_id=brand_id,
         )
 
-    def get_store_detail(self, brand_id: int, shop_id: int) -> dict:
+    def get_store_detail(self, shop_id: int) -> dict:
         """
         Query detailed information for a single store.
 
         POST /open/standard/shop/MerchantOrgReadService/queryById
 
+        Uses **shop-level** authorization (shopIdenty only, no brandId).
+
         Args:
-            brand_id: Brand ID.
             shop_id: Shop ID to query.
 
         Returns:
@@ -82,5 +94,5 @@ class ShopAPI:
         return self._request(
             "/open/standard/shop/MerchantOrgReadService/queryById",
             body={"shopId": shop_id},
-            brand_id=brand_id,
+            shop_id=shop_id,
         )

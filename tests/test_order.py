@@ -2,6 +2,8 @@
 Tests for OrderAPI — order list and detail endpoints.
 
 Uses the `responses` library to mock HTTP calls without real network requests.
+
+Note: Order endpoints require shop-level auth (shopIdenty, not brandId).
 """
 
 import pytest
@@ -10,15 +12,14 @@ import responses
 from keruyun.client import KeruyunClient
 
 BASE_URL = "https://openapi.keruyun.com"
-BRAND_ID = 32296
 SHOP_ID = 810094
 
 
 @pytest.fixture
 def client():
     c = KeruyunClient(app_key="testkey", app_secret="testsecret")
-    # Pre-populate token cache with a brand-level token (tuple key matches client internals)
-    c._tokens[(BRAND_ID, None)] = "cached_token"
+    # Pre-populate token cache with a shop-level token (tuple key matches client internals)
+    c._tokens[(None, SHOP_ID)] = "cached_token"
     return c
 
 
@@ -36,10 +37,9 @@ class TestOrderAPI:
             },
         )
         result = client.order.get_order_list(
-            brand_id=BRAND_ID,
-            shop_ids=[SHOP_ID],
-            start_date="2026-03-01",
-            end_date="2026-03-15",
+            shop_id=SHOP_ID,
+            start_date="2026-03-01 00:00:00",
+            end_date="2026-03-15 23:59:59",
         )
         assert result["list"][0]["orderId"] == "ORD001"
         assert result["list"][0]["saleAmt"] == 2500
@@ -57,10 +57,9 @@ class TestOrderAPI:
             },
         )
         result = client.order.get_order_list(
-            brand_id=BRAND_ID,
-            shop_ids=[SHOP_ID],
-            start_date="2026-03-01",
-            end_date="2026-03-15",
+            shop_id=SHOP_ID,
+            start_date="2026-03-01 00:00:00",
+            end_date="2026-03-15 23:59:59",
             date_type="2",
             order_types=[1, 2],
             order_statuses=[3],
@@ -89,7 +88,7 @@ class TestOrderAPI:
                 "result": {"orderId": "ORD001", "items": [{"name": "酸辣粉"}]},
             },
         )
-        result = client.order.get_order_detail(brand_id=BRAND_ID, order_id="ORD001")
+        result = client.order.get_order_detail(shop_id=SHOP_ID, order_id="ORD001")
         assert result["orderId"] == "ORD001"
         assert result["items"][0]["name"] == "酸辣粉"
 
@@ -101,7 +100,7 @@ class TestOrderAPI:
             f"{BASE_URL}/open/standard/order/queryDetail",
             json={"code": 0, "msg": "success", "result": {"orderId": "ORD999"}},
         )
-        client.order.get_order_detail(brand_id=BRAND_ID, order_id="ORD999")
+        client.order.get_order_detail(shop_id=SHOP_ID, order_id="ORD999")
 
         import json
         sent_body = json.loads(responses.calls[0].request.body)
