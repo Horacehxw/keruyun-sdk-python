@@ -32,7 +32,7 @@ class TestOrderAPI:
             json={
                 "code": 0,
                 "msg": "success",
-                "data": {"list": [{"orderId": "ORD001", "saleAmt": 2500}]},
+                "result": {"list": [{"orderId": "ORD001", "saleAmt": 2500}]},
             },
         )
         result = client.order.get_order_list(
@@ -53,7 +53,7 @@ class TestOrderAPI:
             json={
                 "code": 0,
                 "msg": "success",
-                "data": {"list": [], "total": 0},
+                "result": {"list": [], "total": 0},
             },
         )
         result = client.order.get_order_list(
@@ -86,7 +86,7 @@ class TestOrderAPI:
             json={
                 "code": 0,
                 "msg": "success",
-                "data": {"orderId": "ORD001", "items": [{"name": "酸辣粉"}]},
+                "result": {"orderId": "ORD001", "items": [{"name": "酸辣粉"}]},
             },
         )
         result = client.order.get_order_detail(brand_id=BRAND_ID, order_id="ORD001")
@@ -99,7 +99,7 @@ class TestOrderAPI:
         responses.add(
             responses.POST,
             f"{BASE_URL}/open/standard/order/queryDetail",
-            json={"code": 0, "msg": "success", "data": {"orderId": "ORD999"}},
+            json={"code": 0, "msg": "success", "result": {"orderId": "ORD999"}},
         )
         client.order.get_order_detail(brand_id=BRAND_ID, order_id="ORD999")
 

@@ -18,8 +18,9 @@ APP_SECRET = "testsecret"
 CACHED_TOKEN = "cached_token"
 
 
-def _make_api_response(data, code: int = 0, msg: str = "success"):
-    return {"code": code, "msg": msg, "data": data}
+def _make_api_response(result, code: int = 0, msg: str = "success"):
+    """Real API returns {"code": 0, "result": {...}}"""
+    return {"code": code, "msg": msg, "result": result}
 
 
 @pytest.fixture

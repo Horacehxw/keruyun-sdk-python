@@ -84,7 +84,7 @@ class KeruyunClient:
 
         params = self._build_base_params(brand_id=brand_id, shop_id=shop_id)
         sign = compute_sign(params, body_json=None, token_or_secret=self._app_secret)
-        params["secretKey"] = self._app_secret
+        # secretKey must NOT be sent as a query param — only used in signing
         params["sign"] = sign
 
         url = self._base_url + "/open/v1/token/get"
@@ -99,7 +99,9 @@ class KeruyunClient:
                 path="/open/v1/token/get",
             )
 
-        token = data["data"]["token"]
+        # Token endpoint returns {"code": 0, "result": {"token": "..."}}
+        result = data.get("result") or data.get("data", {})
+        token = result["token"]
         self._tokens[cache_key] = token
         return token
 
@@ -198,7 +200,12 @@ class KeruyunClient:
         params["sign"] = sign
 
         url = self._base_url + path
-        resp = self._session.post(url, params=params, data=body_json.encode("utf-8"))
+        resp = self._session.post(
+            url,
+            params=params,
+            data=body_json.encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
         resp.raise_for_status()
         data = resp.json()
 
@@ -224,4 +231,5 @@ class KeruyunClient:
                 path=path,
             )
 
-        return data.get("data")
+        # Return the "result" field if present, otherwise the whole response
+        return data.get("result", data)

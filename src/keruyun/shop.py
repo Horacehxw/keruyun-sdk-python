@@ -31,7 +31,12 @@ class ShopAPI:
         params["sign"] = sign
 
         url = client._base_url + path
-        resp = client._session.post(url, params=params, data=body_json.encode("utf-8"))
+        resp = client._session.post(
+            url,
+            params=params,
+            data=body_json.encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
         resp.raise_for_status()
         data = resp.json()
 

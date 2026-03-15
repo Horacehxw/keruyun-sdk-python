@@ -7,6 +7,7 @@ Uses the `responses` library to mock HTTP calls without making real network requ
 import json
 import pytest
 import responses as responses_lib
+from urllib.parse import urlparse, parse_qs
 
 from keruyun import KeruyunClient, KeruyunAPIError, KeruyunAuthError
 
@@ -25,11 +26,13 @@ def _token_url():
 
 
 def _make_token_response(token: str, code: int = 0, msg: str = "success"):
-    return {"code": code, "msg": msg, "data": {"token": token}}
+    """Token endpoint returns {"code": 0, "result": {"token": "..."}}"""
+    return {"code": code, "msg": msg, "result": {"token": token}}
 
 
-def _make_api_response(data: dict, code: int = 0, msg: str = "success"):
-    return {"code": code, "msg": msg, "data": data}
+def _make_api_response(result: dict, code: int = 0, msg: str = "success"):
+    """Standard API endpoints return {"code": 0, "result": {...}}"""
+    return {"code": code, "msg": msg, "result": result}
 
 
 @pytest.fixture
@@ -101,8 +104,28 @@ def test_token_fetch_failure_raises_auth_error(client):
 
 
 @responses_lib.activate
+def test_secret_key_not_in_token_url(client):
+    """secretKey must NOT appear in the token request URL query params."""
+    responses_lib.add(
+        responses_lib.GET,
+        _token_url(),
+        json=_make_token_response(BRAND_TOKEN),
+        status=200,
+    )
+
+    client._get_token(brand_id=BRAND_ID, shop_id=None)
+
+    token_call = responses_lib.calls[0]
+    parsed = urlparse(token_call.request.url)
+    query_params = parse_qs(parsed.query)
+    assert "secretKey" not in query_params, "secretKey must NOT be sent as a URL query param"
+    assert "sign" in query_params, "sign must be present in URL query params"
+    assert "appKey" in query_params
+
+
+@responses_lib.activate
 def test_successful_post_request(client):
-    """POST to API with valid response returns parsed data dict."""
+    """POST to API with valid response returns parsed result dict."""
     api_path = "/open/v1/report/queryFlow"
     responses_lib.add(
         responses_lib.GET,
@@ -119,6 +142,34 @@ def test_successful_post_request(client):
 
     result = client._request(api_path, body={"date": "2026-03-15"}, brand_id=BRAND_ID, shop_id=None)
     assert result == {"total": 9999}
+
+
+@responses_lib.activate
+def test_request_body_is_compact_json(client):
+    """POST body must be compact JSON (no extra spaces) to match signing."""
+    api_path = "/open/v1/report/queryFlow"
+    responses_lib.add(
+        responses_lib.GET,
+        _token_url(),
+        json=_make_token_response(BRAND_TOKEN),
+        status=200,
+    )
+    responses_lib.add(
+        responses_lib.POST,
+        BASE_URL + api_path,
+        json=_make_api_response({"ok": True}),
+        status=200,
+    )
+
+    body = {"date": "2026-03-15", "shopId": 12345}
+    client._request(api_path, body=body, brand_id=BRAND_ID, shop_id=None)
+
+    api_call = responses_lib.calls[1]
+    sent_body = api_call.request.body
+    if isinstance(sent_body, bytes):
+        sent_body = sent_body.decode("utf-8")
+    # Compact JSON has no spaces after : or ,
+    assert sent_body == json.dumps(body, separators=(",", ":"), ensure_ascii=False)
 
 
 @responses_lib.activate

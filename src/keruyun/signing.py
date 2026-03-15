@@ -5,16 +5,21 @@ Sign string format:
   k1v1k2v2...body{json}token_or_secret
 
 Where param keys appear in FIXED order (not alphabetical):
-  appKey, shopIdenty, brandId, timestamp, version
+  appKey, shopIdenty, brandId, timestamp, token, version
 
 Only params present in the call are included.
-Token (or secretKey for token-fetch) is appended after body (no key prefix).
+Token (or secretKey for token-fetch) is ALSO appended after body (no key prefix).
+
+Note: For authenticated calls the token appears both as a named param in the
+sign string (between timestamp and version) AND appended at the end.
+For token-fetch calls only secretKey is appended (no token param present).
 """
 
 import hashlib
 
-# Fixed order for signing — only keys present in params are included
-_SIGN_PARAM_ORDER = ["appKey", "shopIdenty", "brandId", "timestamp", "version"]
+# Fixed order for signing — only keys present in params are included.
+# 'token' sits between 'timestamp' and 'version' in lexicographic order.
+_SIGN_PARAM_ORDER = ["appKey", "shopIdenty", "brandId", "timestamp", "token", "version"]
 
 
 def build_sign_string(

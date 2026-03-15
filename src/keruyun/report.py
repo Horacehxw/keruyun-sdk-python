@@ -65,7 +65,10 @@ class ReportAPI:
 
             url = self._client._base_url + path
             resp = self._client._session.post(
-                url, params=params, data=body_json.encode("utf-8")
+                url,
+                params=params,
+                data=body_json.encode("utf-8"),
+                headers={"Content-Type": "application/json"},
             )
             resp.raise_for_status()
             data = resp.json()
@@ -91,6 +94,13 @@ class ReportAPI:
         end_date: int,
         page_num: int = 1,
         page_size: int = 50,
+        coupon_statistical_type: str = "BY_NAME",
+        store_statistical_type: str = "COMBINE",
+        org_statistics_type: str = "BY_SHOP",
+        period_type: str = "BY_DAY",
+        order_source_list: list[str] | None = None,
+        order_type_list: list[str] | None = None,
+        statistics_by_shop: bool = True,
     ) -> Any:
         """
         Fetch business income summary report.
@@ -104,11 +114,31 @@ class ReportAPI:
             end_date: End timestamp in milliseconds (BUSI_DATE).
             page_num: Page number (default 1).
             page_size: Page size (default 50).
+            coupon_statistical_type: Coupon stat type (default "BY_NAME").
+            store_statistical_type: Store stat type (default "COMBINE").
+            org_statistics_type: Org statistics type (default "BY_SHOP").
+            period_type: Period grouping type (default "BY_DAY").
+            order_source_list: Order sources (default ["POS"]).
+            order_type_list: Order types (default ["FOR_HERE"]).
+            statistics_by_shop: Whether to split stats by shop (default True).
 
         Returns:
             The ``result`` field from the API response.
         """
+        if order_source_list is None:
+            order_source_list = ["POS"]
+        if order_type_list is None:
+            order_type_list = ["FOR_HERE"]
         body = self._build_body(shop_ids, start_date, end_date, page_num, page_size)
+        body.update({
+            "couponStatisticalType": coupon_statistical_type,
+            "storeStatisticalType": store_statistical_type,
+            "orgStatisticsType": org_statistics_type,
+            "periodType": period_type,
+            "orderSourceList": order_source_list,
+            "orderTypeList": order_type_list,
+            "statisticsByShop": statistics_by_shop,
+        })
         return self._request(
             path="/open/standard/report/business/income/v3/list",
             body=body,
