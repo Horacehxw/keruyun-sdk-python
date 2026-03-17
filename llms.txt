@@ -1,0 +1,33 @@
+# keruyun-sdk-python
+
+> Python SDK for the Keruyun (客如云) restaurant POS open platform API
+
+## Overview
+
+Unofficial Python SDK wrapping the Keruyun Open Platform REST API. Provides typed access to 17 endpoints across 4 modules: report (revenue/sales analytics), shop (store management), order (order queries), and supply chain (inventory/BOM/procurement).
+
+## Installation
+
+pip install keruyun-sdk
+
+## Quick Start
+
+```python
+from keruyun import KeruyunClient
+
+client = KeruyunClient(app_key="your_key", app_secret="your_secret")
+result = client.report.get_daily_flow(brand_id=123, date="2026-03-15")
+```
+
+## API Modules
+
+- report: get_daily_flow, get_shop_flow, get_menu_sales, get_payment_stats, get_business_income
+- shop: get_shop_list, get_shop_detail
+- order: get_order_list, get_order_detail
+- supply: get_inventory, get_bom_list, get_procurement_prediction, and 5 more
+
+## Links
+
+- Source: https://github.com/Horacehxw/keruyun-sdk-python
+- PyPI: https://pypi.org/project/keruyun-sdk/
+- Keruyun API docs: https://open.keruyun.com/docs/

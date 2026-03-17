@@ -1,5 +1,10 @@
 # keruyun-sdk-python
 
+[![PyPI version](https://img.shields.io/pypi/v/keruyun-sdk.svg)](https://pypi.org/project/keruyun-sdk/)
+[![Python](https://img.shields.io/pypi/pyversions/keruyun-sdk.svg)](https://pypi.org/project/keruyun-sdk/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/Horacehxw/keruyun-sdk-python/actions/workflows/tests.yml/badge.svg)](https://github.com/Horacehxw/keruyun-sdk-python/actions/workflows/tests.yml)
+
 Python SDK for the [Keruyun (客如云)](https://open.keruyun.com/) restaurant POS open platform API.
 
 > **Disclaimer:** This is an unofficial, community-maintained SDK. 客如云 is a trademark of Beijing Keruyun Technology Co., Ltd. This project is not affiliated with or endorsed by Keruyun.
@@ -16,7 +21,7 @@ Python SDK for the [Keruyun (客如云)](https://open.keruyun.com/) restaurant P
 ## Installation
 
 ```bash
-pip install git+https://github.com/Horacehxw/keruyun-sdk-python.git
+pip install keruyun-sdk
 ```
 
 For development:
@@ -74,3 +79,22 @@ pytest -v -m integration
 ## License
 
 [MIT](LICENSE)
+
+---
+
+## 中文说明
+
+客如云开放平台 Python SDK，支持报表、门店、订单、供应链等 17 个 API 接口。
+
+**安装：**
+```bash
+pip install keruyun-sdk
+```
+
+**特性：**
+- 自动 token 管理和缓存
+- SHA256 签名（符合客如云规范）
+- 37 个单元测试，100% mock，无需真实凭据即可运行
+- 支持品牌级和门店级数据查询
+
+**使用前需要：** 在[客如云开放平台](https://open.keruyun.com/)注册并获取 app_key 和 app_secret。

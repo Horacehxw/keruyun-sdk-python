@@ -1,13 +1,39 @@
 [project]
 name = "keruyun-sdk"
 version = "0.1.0"
-description = "Python SDK for the Keruyun open platform API"
+description = "Python SDK for the Keruyun (客如云) restaurant POS open platform API"
 license = "MIT"
 requires-python = ">=3.11"
+readme = "README.md"
+authors = [
+    {name = "Xiaowu (Horace) He", email = "horacehxw@gmail.com"},
+]
+keywords = ["keruyun", "restaurant", "pos", "sdk", "api"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = ["requests>=2.31"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "responses>=0.25"]
+
+[project.urls]
+Homepage = "https://github.com/Horacehxw/keruyun-sdk-python"
+Repository = "https://github.com/Horacehxw/keruyun-sdk-python"
+Issues = "https://github.com/Horacehxw/keruyun-sdk-python/issues"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

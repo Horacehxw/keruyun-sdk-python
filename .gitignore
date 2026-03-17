@@ -6,3 +6,8 @@ dist/
 .pytest_cache/
 .coverage
 .env
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
